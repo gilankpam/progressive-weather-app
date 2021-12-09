@@ -1,48 +1,45 @@
-![fooo](https://user-images.githubusercontent.com/9766310/36504143-7796099e-178a-11e8-90df-5a1ed43a65b3.png)
-
 # [Progressive Weather App](https://jimmerioles.github.io/progressive-weather-app/)
-A local weather app that fetches weather forecast from Openweathermap.org. A Progressive Web App built with Vue.js.
+Original Readme
 
-## Features
-* Progressive Web App
-* Lighthouse score average: 95/100
-* Works offline
-* Add to homescreen (mobile)
-* Different theme depending on time (day or night)
-* Different weather icon depending on weather
-* Click to toggle temperature scale (Celcius or Fahrenheit)
+## New Added Feature
 
-## Built With
-* Vue.js
-* Modern Javascript (ECMAScript2015+)
+### Containerization
 
-## Changelog
+It uses Docker to containerized the application. On Dockerfile there are 3 stages, base, testrunner and main.
+Testrunner stage used to run unit test. We used the same dockerfile with same base image to run the unit test to make sure the full compatibility with the build image. To run the test, first we need to build and specify the target to `testrunner`. 
 
-Please see [CHANGELOG][link-changelog] for more information on what has changed recently.
+```
+docker build -t app-test --target=testrunner .
+docker run --rm app-test
+```
 
-## Contributing
+The main stage it uses nginx to act as static web server. The nginx config is located on `deploy/nginx.conf`.
 
-Open for suggestions and requests. Please request through [issue][link-issue] or [pull requests][link-pull-request].
+### Makefile
 
-## Security
+Makefile uses to simplify the process. There are 4 processes.
 
-If you discover any security related issues, please email jimwisleymerioles@gmail.com instead of using the issue tracker.
+* Test = run unit test
 
-## Credits
+* Build = build into docker image
 
-- [Jim Merioles][link-author]
+* Push = push to docker registry
 
-### Want to show some :heart:?
+* Deploy = upgrade kubernetes release using helm
 
-Let's find Satoshi Nakamoto! | or let's have a :coffee:
------------- | ------------
-![Donate Bitcoin][ico-bitcoin] | ![Donate Ethereum][ico-ethereum]
+### Helm Chart
 
+Helm used to package the application to be easily deployed to kubernetes cluster. With helm we can easily version and manage releases. Helm also support to deploy multiple release of the same app in the same cluster or namespace for case like staging release, canary etc.
 
-[ico-bitcoin]: https://img.shields.io/badge/Bitcoin-1KBT3Mzsr2dZqhQqNYx4gum8Yuyd61UzNk-blue.svg?style=flat-square
-[ico-ethereum]: https://img.shields.io/badge/Ethereum-0x7896E9C4118e495Eb7001a847BBFA3C29Dfc69d9-blue.svg?style=flat-square
+### Azure Pipeline
 
-[link-author]: https://twitter.com/jimmerioles
-[link-changelog]: https://github.com/jimmerioles/progressive-weather-app/releases
-[link-issue]: https://github.com/jimmerioles/progressive-weather-app/issues/new
-[link-pull-request]: https://github.com/jimmerioles/progressive-weather-app/pull/new/master
+Azure pipeline help automate the CICD process. Every push will run the automated unit test (make test), and every tag with prefix `release-*` will be deployed. Deployment flow:
+
+* Create new tag from any branch you want to deploy
+
+```
+git tag release-v1
+git push origin release-v1
+```
+
+* Azure pipeline will automatically trigger build and deploy

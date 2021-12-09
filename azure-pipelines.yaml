@@ -1,0 +1,30 @@
+trigger:
+- '*'
+
+stages:
+- stage: Test
+  jobs:
+  - job: Unit_Test
+    steps:
+    - script: make test
+      displayName: Unit Test
+
+- stage: Build
+  condition: and(succeeded(), startsWith($(Build.SourceBranch), 'refs/tags/release'))
+  jobs:
+  - job: Build
+    steps:
+    - script: make build push
+      displayName: Docker build and push
+
+- stage: Deploy
+  condition: and(succeeded(), startsWith($(Build.SourceBranch), 'refs/tags/release'))
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy to production
+    environment: 'production'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: make deploy
