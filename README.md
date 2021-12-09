@@ -1,5 +1,5 @@
 # [Progressive Weather App](https://jimmerioles.github.io/progressive-weather-app/)
-Original Readme
+[Original Readme](https://github.com/gilankpam/progressive-weather-app/blob/master/ORIGINAL_README.md)
 
 ## New Added Feature
 
